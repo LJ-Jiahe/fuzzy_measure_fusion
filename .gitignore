@@ -1,1 +1,8 @@
 data/
+unused/
+trained_models/
+playground.*
+.DS_Store
+.ipynb_checkpoints/
+output/
+__pycache__/
