@@ -8,39 +8,41 @@ import numpy as np
 
 
 class Data_Source:
-    def __init__(self, dim, num_per_perm, superset_factor, distribution='uniform'):
-        self.dim = dim
+    def __init__(self, num_source, num_per_perm, distribution='uniform'):
+        self.num_source = num_source
         self.num_per_perm = num_per_perm
-        self.all_perms = list(permutations(list(range(dim))))
-        self.superset, _, self.data_idx_by_perm = create_dataset(dim, self.all_perms, num_per_perm, superset_factor, distribution)
+        self.data_by_perm, self.all_perms = create_dataset(num_source, num_per_perm, distribution)
     
     def get_superset(self):
         return self.superset
     
-    def get_data_idx(self, dim, num_per_perm):
-        if dim == self.dim and num_per_perm == self.num_per_perm:
-            data_idx = self.data_idx_by_perm
-        
+    def get_all_perms(self):
+        return self.all_perms
+    
+    def get_data_by_perm(self, num_source, num_per_perm, all_perms):
+        if num_source == self.num_source and num_per_perm == self.num_per_perm:
+            data_by_perm = self.data_by_perm
+            
         else:
-            all_perms = list(permutations(list(range(dim))))
-            data_idx = []
+            data_by_perm = []
             for p1 in all_perms:
-                for j, p2 in enumerate(self.all_perms):
-                    if p1 == p2[0:dim]:
-                        data_idx.append(self.data_idx_by_perm[j][0:num_per_perm])
+                for p2 in self.all_perms:
+                    if p1 == p2[0:num_source]:
+                        p2_first_idx = self.all_perms.index(p2) * self.num_per_perm
+                        data_by_perm.append(self.data_by_perm[0:num_source, p2_first_idx:p2_first_idx+num_per_perm])
                         break
-            data_idx = np.asarray(data_idx)
-        
-        return data_idx
+            data_by_perm = np.concatenate(data_by_perm,  1)
+            
+        return data_by_perm
 
 
-def create_dataset(dim, all_perms, num_per_perm, superset_factor, distribution):
+def create_dataset(num_source, num_per_perm, distribution):
     """
     Create a dataset with all possible permutation, with each permutation having the same number of samples.
     
-    :param dim: Dimension of data sample
+    :param num_source: Number of sources to be fused
     :param all_perms: A list of permutation. 
-                       Use as an input so that the algorithm creates data for different permutations in the order assigned.
+                      Use as an input so that the algorithm creates data for different permutations in the order assigned.
     :param num_per_perm: Number of data samples for each permutation
     :param superset_factor: Data for each permutation are pulled from a randomly generated dataset. 
                             To ensure that each permutation gets at least #num_per_perm# data samples,
@@ -49,53 +51,73 @@ def create_dataset(dim, all_perms, num_per_perm, superset_factor, distribution):
     # Every permutation gets the same number of train/test data samples,
     # To ensure that, calculate the number of data needed in total, 
     # and generate a super dataset that is multiple times bigger.
-    num = math.factorial(dim) * num_per_perm
+    num = math.factorial(num_source) * num_per_perm
+
+    all_perms = list(permutations(list(range(num_source))))
+
+    superset_factor = 4 # A factor needed specificly for [MY] random data creation.
+                        # Explaination:
+                        # When num_source=3, there are 6 possible permutations, 1 2 3, 1 3 2, 2 1 3, 2 3 1, 3 1 2, 3 2 1
+                        # If we want 10 data points for each permutation, the dataset should have a size of 60, 10 samples in each permutation.
+                        # But you can't ensure that by simply randomly sample 60 3-num_source entional data samples. At least one permutation will end up having less than 10 samples.
+                        # What's a good number that you should sample from? 240, or 4 times more than your required number in this case, is what I found to be "Never fails on me".
+    
     # Create superset
-    if distribution == 'uniform':
-        data_superset = np.random.rand(dim, num*superset_factor)
-    elif distribution == 'normal':
-        lower = 0
-        upper = 1
-        mu = 0.5
-        sigma = 0.15
-        data_superset = scipy.stats.truncnorm.rvs((lower-mu)/sigma, (upper-mu)/sigma, loc=mu, scale=sigma, size=(dim, num*superset_factor))
-    elif distribution == 'bimodal':
-        lower = 0
-        upper = 1
-        mu1 = 0
-        mu2 = 1
-        sigma = 0.15
-        data_superset1 = scipy.stats.truncnorm.rvs((lower-mu1)/sigma, (upper-mu1)/sigma, loc=mu1, scale=sigma, size=(dim, int(num*superset_factor/2)))
-        data_superset2 = scipy.stats.truncnorm.rvs((lower-mu2)/sigma, (upper-mu2)/sigma, loc=mu2, scale=sigma, size=(dim, int(num*superset_factor/2)))
-        data_superset = np.concatenate((data_superset1, data_superset2), 1)
-    # Get permutation of each data sample
-    data_perms = np.argsort(data_superset, 0)
-    # N! possible permutations
-#     all_perms = list(permutations(list(range(dim))))
-    # Group data sample according to its permutation
-    data_idx_superset_by_perm = []
     
-    for i, current_perm in enumerate(all_perms):
-        # Get index of data sample of certain permutation and save to list
-        temp = np.where(data_perms[0, :]==current_perm[0])
-        for idx, p in enumerate(current_perm):
-            temp = np.intersect1d(temp, np.where(data_perms[idx, :]==p))
-        if temp.size < num_per_perm:
-            print('Current permutation doesn\'t have sufficient number of samples. Please regenerate!')
-            exit()
-        data_idx_superset_by_perm.append(temp)
+    data_by_perm = []
+    for perm in all_perms:
+        data = np.zeros((num_source, num_per_perm))
+        
+        # Choose data distribution
+        if distribution == 'uniform':
+            rand_func = np.random.random
+            
+        elif distribution == 'Gaussian':
+            lower = 0
+            upper = 1
+            mu = 0.5
+            sigma = 0.15
+            rand_func = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu)/sigma, (upper-mu)/sigma, loc=mu, scale=sigma, size=num_source)
+            
+        elif distribution == 'polarized':
+            lower = 0
+            upper = 1
+            mu1 = 0
+            mu2 = 1
+            sigma = 0.15
+            rand_func1 = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu1)/sigma, (upper-mu1)/sigma, loc=mu1, scale=sigma, size=num_source)
+            rand_func2 = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu2)/sigma, (upper-mu2)/sigma, loc=mu2, scale=sigma, size=num_source)
+#             rand_func = random.choice([rand_func1, rand_func2])
+                
+        elif distribution == 'random Gaussian':
+            lower = 0
+            upper = 1
+            mu = random.uniform(0, 1)
+            sigma = 0.15
+#             rand_func = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu)/sigma, (upper-mu)/sigma, loc=mu, scale=sigma, size=num_source)
+            
+            
+        if distribution == 'uniform' or distribution == 'Gaussian':
+            data = rand_func((num_source, num_per_perm))
+            data.sort(axis=0)
+            data_by_perm.append(data[np.array(perm), :])
+        
+        elif distribution == 'polarized' or distribution == 'random Gaussian':
+            if distribution == 'polarized':
+                rand_func = random.choice([rand_func1, rand_func2])
+            elif distribution == 'random Gaussian':
+                mu = random.uniform(0, 1)
+                rand_func = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu)/sigma, (upper-mu)/sigma, loc=mu, scale=sigma, size=num_source)
+        
+            for i in range(num_per_perm):
+                d = rand_func(num_source)
+                d.sort()
+                data[:, i] = d[np.array(perm)]
+
+            data_by_perm.append(data)
     
-    # Every permutation gets the same number of train/test data samples,
-    # Data is randomly pull from superset each epoch
-    data_idx_by_perm = []
-    for i in range(len(all_perms)):
-        temp = data_idx_superset_by_perm[i]
-        random.shuffle(temp)
-        data_idx_by_perm.append(temp[0:num_per_perm])
-        
-    data_idx_by_perm = np.asarray(data_idx_by_perm)
-        
-    return data_superset, data_idx_superset_by_perm, data_idx_by_perm
+    data_by_perm = np.concatenate(data_by_perm, 1)
+    return data_by_perm, all_perms
 
 
 def cal_chi(fm, x):
@@ -149,52 +171,52 @@ def sources_and_subsets_nodes(N):
     return sourcesInNode, subset
 
 
-def get_keys_index(dim):
+def get_keys_index(num_source):
     """
     Sets up a dictionary for referencing FM.
     :return: The keys to the dictionary
     """
-    vls = np.arange(1, dim + 1)
+    vls = np.arange(1, num_source + 1)
     Lattice = {}
-    for i in range(1, dim + 1):
+    for i in range(1, num_source + 1):
         A = np.array(list(itertools.combinations(vls, i)))
         for latt_pt in A:
             Lattice[str(latt_pt)] = 1/2
-        if i == dim:
+        if i == num_source:
             Lattice[str(A[-1])] = 1
     return Lattice
 
 
-def get_min_fm_target(dim):
-    fm = get_keys_index(dim)
+def get_min_fm_target(num_source):
+    fm = get_keys_index(num_source)
     for key in fm.keys():
-        if len(key.split()) != dim:
+        if len(key.split()) != num_source:
             fm[key] = 0
         else:
             fm[key] = 1
     return fm
     
     
-def get_max_fm_target(dim):
-    fm = get_keys_index(dim)
+def get_max_fm_target(num_source):
+    fm = get_keys_index(num_source)
     for key in fm.keys():
         fm[key] = 1
     return fm
 
 
-def gmean(dim):
-    return lambda x, d: np.power(np.prod(x, d), 1/dim)
+def gmean(num_source):
+    return lambda x, d: np.power(np.prod(x, d), 1/num_source)
 
 
-def get_mean_fm_target(dim):
-    fm = get_keys_index(dim)
+def get_mean_fm_target(num_source):
+    fm = get_keys_index(num_source)
     for key in fm.keys():
-        fm[key] = len(key.split()) / dim
+        fm[key] = len(key.split()) / num_source
     return fm
 
 
-def get_gmean_fm_target(dim):
-    fm = get_mean_fm_target(dim)
+def get_gmean_fm_target(num_source):
+    fm = get_mean_fm_target(num_source)
     return fm
 
 
@@ -202,8 +224,8 @@ def w_avg(weight):
     return lambda x, d: np.average(x, d, weight)
 
         
-def w_avg_target(dim, weight):
-    fm = get_keys_index(dim)
+def w_avg_target(num_source, weight):
+    fm = get_keys_index(num_source)
     for idx, key in enumerate(fm.keys()):
         if len(key.split()) == 1:
             fm[key] = weight[idx]
@@ -227,4 +249,4 @@ def w_avg_target(dim, weight):
     return fm
 
 def get_w_avg_target(weight):
-    return lambda dim: w_avg_target(dim, weight)
+    return lambda num_source: w_avg_target(num_source, weight)

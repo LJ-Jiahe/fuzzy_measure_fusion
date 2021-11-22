@@ -36,14 +36,13 @@ def test(args):
 
 
 if __name__ == '__main__':
-    reps = range(100)
-    pool = Pool()                         # Create a multiprocessing Pool
+    reps = range(120)
+    pool = Pool() # Create a multiprocessing Pool
     results = pool.map(tools.fusion_for_MP, reps)
     
-    FM_by_dim = {}
     MSEs_seen_by_dim = {}
     MSEs_unseen_by_dim = {}
-    
+    FM_by_dim = {}
     
     for result in results:
         for k in result[0].keys():
