@@ -34,12 +34,12 @@ def fusion_for_MP(rep):
     ################################################################################
     # Data related parameters <START>
 
-    num_source_list = list(range(3, 9)) # Number of sources to be fused, a to b-1
+    num_source_list = list(range(3, 5)) # Number of sources to be fused, a to b-1
 
     num_per_perm_list_train = [1, 10, 50, 100] # Each permutation gets the same number of samples, try different values here for train set
     num_per_perm_list_test = [10] # Each permutation gets the same number of samples
 
-    distributions = ['uniform', 'normal', 'bimodal', 'polarized', 'random Gaussian'] # Use to discuss whether the distribution of data could have an impact on result
+    distributions = ['uniform', 'Gaussian', 'polarized', 'random Gaussian'] # Use to discuss whether the distribution of data could have an impact on result
 
     weights = {3: np.asarray([[0.1, 0.8, 0.1],   # 1 large, 2 small, else 0
                               [0.0, 0.5, 0.5],   # 2 large, else 0
@@ -109,21 +109,17 @@ def fusion_for_MP(rep):
     ################################################################################
     # For Loop 1
     for dist_idx, distribution in enumerate(distributions):
-    
-        # Create data super set, a
+        # Create data source, an ndarray that contains input in the columns, grouped by permutation
         train_data_source = tools.Data_Source(num_source_list[-1], num_per_perm_list_train[-1], distribution)  
-        train_superset = train_data_source.get_superset()
-
         test_data_source = tools.Data_Source(num_source_list[-1], num_per_perm_list_test[-1], distribution)  
-        test_superset = test_data_source.get_superset()
-        
+
         ################################################################################
         # For Loop 2
         for num_source in num_source_list:
             
             # Switch out arbitrary avg funcs to new num_source
             for avg_idx in range(len(weights[num_source])):
-                avg_funcs[3+avg_idx] = tools.w_avg(weights[num_source][avg_idx])
+                avg_funcs[3+avg_idx] = tools.weighted_avg(weights[num_source][avg_idx])
              
             # When the # of possible permutations exceed certain number (in here 5!), 
             # instead of feeding only one more permutation a time, feed more.
@@ -158,38 +154,43 @@ def fusion_for_MP(rep):
                 for perc_idx, perc in enumerate(tqdm(range(step-1, num_perms, step))):
                     
                     # Find index of train/test sample in superset and shuffle
-                    train_idx = np.concatenate(train_idx_by_perm[0:perc+1])
+                    # train_idx = np.concatenate(train_idx_by_perm[0:perc+1])
 
-                    if data_imb == 'imbalanced' and perc < num_perms-1:
-                        imb_data = np.concatenate(imbalanced_train_by_perm[perc+1:])
-                        train_idx = np.concatenate((train_idx, imb_data))
+                    # if data_imb == 'imbalanced' and perc < num_perms-1:
+                    #     imb_data = np.concatenate(imbalanced_train_by_perm[perc+1:])
+                    #     train_idx = np.concatenate((train_idx, imb_data))
                     
-                    np.random.shuffle(train_idx)
-                    test_idx = np.concatenate(test_idx_by_perm[0:perc+1])
+                    # np.random.shuffle(train_idx)
+                    # test_idx = np.concatenate(test_idx_by_perm[0:perc+1])
 
 
 
 
                     # Find data sample through index
-                    train_d = train_data_by_perm[:, 0:num_per_perm_train*(perc+1)]
-                    test_d = test_superset[:, test_idx][0:num_source]
+                    train_d = train_data_by_perm[0:num_per_perm_train*(perc+1), :]
+                    train_d = tools.shuffle_array_columns(train_d)
+                    test_d = test_data_by_perm[0:num_per_perm_list_test[0]*(perc+1), :]
+                    test_d_unseen = test_data_by_perm[num_per_perm_list_test[0]*(perc+1):, :]
+
+                    
+                    
                     # Define unseen test data samples when the train data doesn't cover 100% of the permutation
-                    if perc < num_perms-1:
-                        test_idx_unseen = np.concatenate(test_idx_by_perm[perc+1:])
-                        test_d_unseen = test_superset[:, test_idx_unseen][0:num_source]
-                    else:
-                        test_d_unseen = []
+                    # if perc < num_perms-1:
+                    #     test_idx_unseen = np.concatenate(test_idx_by_perm[perc+1:])
+                    #     test_d_unseen = test_superset[:, test_idx_unseen][0:num_source]
+                    # else:
+                    #     test_d_unseen = []
 
                     # Define subsets of 'X', or keys for fuzzy measure. Like '1 2' or '1 3 4 5' for g(x1, x2) or g(x1, x3, x4, x5)
-                    sourcesInNode, subset = tools.sources_and_subsets_nodes(num_source)
-                    keys = [str(np.sort(i)+1) for i in sourcesInNode]
+                    # sourcesInNode, subset = tools.sources_and_subsets_nodes(num_source)
+                    keys = list(tools.init_FM(num_source).keys())
                     
                     ################################################################################
                     # For Loop 5
                     for avg_idx, avg_func in enumerate(avg_funcs):
                         # Calculate label with given avg function
-                        train_label = avg_func(train_d, 0)
-                        test_label = avg_func(test_d, 0)
+                        train_label = avg_func(train_d, 1)
+                        test_label = avg_func(test_d, 1)
                         
                         ################################################################################
                         # For Loop 6
@@ -225,23 +226,23 @@ def fusion_for_MP(rep):
                             
                             FM[dist_idx, npp_idx, perc_idx, avg_idx, model_idx, :] = np.asarray(list(fm.values()))
                             # Calculate result from integral with test data
-                            test_output = np.apply_along_axis(tools.get_cal_chi(fm), 0, test_d)
+                            test_output = np.apply_along_axis(tools.get_cal_chi(fm), 1, test_d)
                             MSE = ((test_output - test_label)**2).mean()
                             MSEs_seen[dist_idx, npp_idx, perc_idx, avg_idx, model_idx] = MSE
                             # Calculate result from integral with test data - unseen
                             if perc < num_perms-1:
-                                test_label_unseen = avg_func(test_d_unseen, 0)
-                                test_out_unseen = np.apply_along_axis(tools.get_cal_chi(fm), 0, test_d_unseen)
+                                test_label_unseen = avg_func(test_d_unseen, 1)
+                                test_out_unseen = np.apply_along_axis(tools.get_cal_chi(fm), 1, test_d_unseen)
                                 MSEs_unseen[dist_idx, npp_idx, perc_idx, avg_idx, model_idx] = ((test_out_unseen - test_label_unseen)**2).mean()
                                 
             if num_source in FM_by_num_source.keys():
-                FM_by_num_source[num_source] = np.append(FM_by_num_source[num_source], np.expand_num_sources(FM, axis=0), axis=0)
-                MSEs_seen_by_num_source[num_source] = np.append(MSEs_seen_by_num_source[num_source], np.expand_num_sources(MSEs_seen, axis=0), axis=0)
-                MSEs_unseen_by_num_source[num_source] = np.append(MSEs_unseen_by_num_source[num_source], np.expand_num_sources(MSEs_unseen, axis=0), axis=0)
+                FM_by_num_source[num_source] = np.append(FM_by_num_source[num_source], np.expand_dims(FM, axis=0), axis=0)
+                MSEs_seen_by_num_source[num_source] = np.append(MSEs_seen_by_num_source[num_source], np.expand_dims(MSEs_seen, axis=0), axis=0)
+                MSEs_unseen_by_num_source[num_source] = np.append(MSEs_unseen_by_num_source[num_source], np.expand_dims(MSEs_unseen, axis=0), axis=0)
             else:
-                FM_by_num_source[num_source] = np.expand_num_sources(FM, axis=0)
-                MSEs_seen_by_num_source[num_source] = np.expand_num_sources(MSEs_seen, axis=0)
-                MSEs_unseen_by_num_source[num_source] = np.expand_num_sources(MSEs_unseen, axis=0)
+                FM_by_num_source[num_source] = np.expand_dims(FM, axis=0)
+                MSEs_seen_by_num_source[num_source] = np.expand_dims(MSEs_seen, axis=0)
+                MSEs_unseen_by_num_source[num_source] = np.expand_dims(MSEs_unseen, axis=0)
                 
 
     print('Rep ' + str(rep) + ' done.')

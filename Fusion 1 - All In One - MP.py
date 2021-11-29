@@ -26,17 +26,8 @@ from tqdm import tqdm
 import tools
 
 
-
-
-
-def test(args):
-    return args
-
-
-
-
 if __name__ == '__main__':
-    reps = range(120)
+    reps = range(24)
     pool = Pool() # Create a multiprocessing Pool
     results = pool.map(tools.fusion_for_MP, reps)
     

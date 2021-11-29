@@ -46,8 +46,8 @@ class Choquet_Integral_QP:
         self.type = 'quad'
         self.trainSamples = x1
         self.trainLabels = l1
-        self.N = self.trainSamples.shape[0]
-        self.M = self.trainSamples.shape[1]
+        self.M = self.trainSamples.shape[0]
+        self.N = self.trainSamples.shape[1]
 #         print("Number Inputs : ", self.N, "; Number Samples : ", self.M)
         self.fm = self.produce_lattice()
 
@@ -90,7 +90,7 @@ class Choquet_Integral_QP:
         index_keys = self.get_keys_index()
         for i in range(0, self.M):  # it's going through one sample at a time.
             l = self.trainLabels[i]  # this is the labels
-            fm_coeff = self.get_fm_class_img_coeff(index_keys, self.trainSamples[:, i], fm_len)  # this is Hdiff
+            fm_coeff = self.get_fm_class_img_coeff(index_keys, self.trainSamples[i, :], fm_len)  # this is Hdiff
             # print(fm_coeff)
             L = L + (-2) * l * fm_coeff
             E = E + np.matmul(fm_coeff.reshape((fm_len, 1)), fm_coeff.reshape((1, fm_len)))
@@ -149,7 +149,7 @@ class Choquet_Integral_QP:
         # equality constraints
         A = np.zeros((1, fm_len))
         A[0, -1] = 1
-        b = np.array([1.]);
+        b = np.array([1.])
 
         return G, h, A, b
 
