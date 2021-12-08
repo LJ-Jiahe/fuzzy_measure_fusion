@@ -5,7 +5,7 @@ import datetime
 from itertools import permutations
 import math
 from multiprocessing import Pool
-# import os
+import os
 import pickle
 import platform
 import random
@@ -60,6 +60,10 @@ if __name__ == '__main__':
 
     output_dir = 'output/'
     now = datetime.datetime.now().strftime("-%m-%d-%Y@%H.%M.%S")
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     with open(output_dir + 'ChI_saved_file' + now, 'wb') as f:
         pickle.dump(FM_by_dim, f)
         pickle.dump(MSEs_seen_by_dim, f)
