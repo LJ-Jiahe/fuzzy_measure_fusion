@@ -19,7 +19,7 @@ import torch
 # import torchvision
 # from torchvision import transforms, models,datasets
 # from torch.utils.data import Dataset, DataLoader
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 # from tools import *
 import tools
@@ -108,14 +108,14 @@ def fusion(rep, max_Num_Source):
 
     ################################################################################
     # For Loop 1
-    for dist_idx, distribution in enumerate(distributions):
+    for dist_idx, distribution in enumerate(tools.pbiter(distributions)):
         # Create data source, an ndarray that contains input in the columns, grouped by permutation
         train_data_source = tools.Data_Source(num_source_list[-1], num_per_perm_list_train[-1], distribution)  
         test_data_source = tools.Data_Source(num_source_list[-1], num_per_perm_list_test[-1], distribution)  
 
         ################################################################################
         # For Loop 2
-        for num_source in num_source_list:
+        for num_source in tools.pbiter(num_source_list):
             
             # Switch out arbitrary avg funcs to new num_source
             for avg_idx in range(len(weights[num_source])):
@@ -137,7 +137,7 @@ def fusion(rep, max_Num_Source):
 
             ################################################################################
             # For Loop 3
-            for npp_idx, num_per_perm_train in enumerate(num_per_perm_list_train):
+            for npp_idx, num_per_perm_train in enumerate(tools.pbiter(num_per_perm_list_train)):
 
                 # Shuffle the order of permutations fed to model in train session
                 all_perms = list(permutations(list(range(num_source))))
@@ -151,7 +151,7 @@ def fusion(rep, max_Num_Source):
 
                 ################################################################################
                 # For Loop 4
-                for perc_idx, perc in enumerate(tqdm(range(step-1, num_perms, step))):
+                for perc_idx, perc in enumerate(tools.pbiter(range(step-1, num_perms, step))):
                     
                     # Find index of train/test sample in superset and shuffle
                     # train_idx = np.concatenate(train_idx_by_perm[0:perc+1])
