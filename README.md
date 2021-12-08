@@ -21,12 +21,12 @@ Ignore ipynb files for now, these are files I used to build up the final code. T
 
 **Command**
 ```
-python Fusion-MP.py <repetition> <max_Num_Sources> <multi_process>
+python fusion-MP.py <repetition> <max_Num_Sources> <multi_process>
 ```
 <p>The command takes 2 or 3 parameters besides the .py file.</p>
 
 | Parameter | Description |
 |--- | --- |
-| &ltrepetition> | integer, how many times you want to run for the test. |
-| &ltmax_Num_Sources> | integer, has to be bigger than 3. |
-| &ltmulti_process> | optional, integer, how many processes you want to use. The code will utilize all available processes if not explicitly assigned. |
+| &lt;repetition> | integer, how many times you want to run for the test. |
+| &lt;max_Num_Sources> | integer, has to be bigger than 3. |
+| &lt;multi_process> | optional, integer, how many processes you want to use. The code will utilize all available processes if not explicitly assigned. |
