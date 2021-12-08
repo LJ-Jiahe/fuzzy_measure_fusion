@@ -30,3 +30,17 @@ python fusion-MP.py <repetition> <max_Num_Sources> <multi_process>
 | &lt;repetition> | integer, how many times you want to run for the test. |
 | &lt;max_Num_Sources> | integer, has to be bigger than 3. |
 | &lt;multi_process> | optional, integer, how many processes you want to use. The code will utilize all available processes if not explicitly assigned. |
+
+For test run after environmnet setup, startwith
+```
+<repetition> = 10
+<max_Num_Sources> = 3
+<multi_process> = 10
+```
+
+If that works, now use
+```
+<repetition> = 100
+<max_Num_Sources> = 8
+<multi_process> = 100
+```
