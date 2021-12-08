@@ -25,8 +25,8 @@ python Fusion\ 1\ -\ All\ In\ One\ -\ MP.py <repetition> <max_Num_Sources> <mult
 ```
 <p>The command takes 2 or 3 parameters besides the .py file.</p>
 
-<p><repetition> integer, how many times you want to run for the test.</p>
-
-<p><max_Num_Sources> integer, has to be bigger than 3.</p>
-
-<p><multi_process> optional, integer, how many processes you want to use. The code will utilize all available processes if not explicitly assigned.</p>
+| Parameter | Description |
+|--- | --- |
+| &ltrepetition> | integer, how many times you want to run for the test. |
+| &ltmax_Num_Sources> | integer, has to be bigger than 3. |
+| &ltmulti_process> | optional, integer, how many processes you want to use. The code will utilize all available processes if not explicitly assigned. |
