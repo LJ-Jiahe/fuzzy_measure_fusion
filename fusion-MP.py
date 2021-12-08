@@ -36,12 +36,12 @@ if __name__ == '__main__':
 
     packed_params = [i for i in zip(reps, max_N_Ss)]
 
-    if len(sys.argv >= 4):
+    if len(sys.argv) >= 4:
         pool = Pool(int(sys.argv[3])) # Create a multiprocessing Pool
     else:
         pool = Pool()
         
-    results = pool.starmap(tools.fusion_for_MP, packed_params)
+    results = pool.starmap(tools.fusion, packed_params)
     
     MSEs_seen_by_dim = {}
     MSEs_unseen_by_dim = {}
