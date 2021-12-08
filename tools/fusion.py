@@ -25,7 +25,7 @@ from tqdm import tqdm
 import tools
 
 
-def fusion_for_MP(rep, max_Num_Source):
+def fusion(rep, max_Num_Source):
 
     ################################################################################
     # Part 1 - Parameters Init
