@@ -9,6 +9,7 @@ from multiprocessing import Pool
 import pickle
 import platform
 import random
+import sys
 from tkinter import Tk
 
 # from cvxopt import solvers, matrix
@@ -27,9 +28,20 @@ import tools
 
 
 if __name__ == '__main__':
-    reps = range(24)
-    pool = Pool() # Create a multiprocessing Pool
-    results = pool.map(tools.fusion_for_MP, reps)
+    rep = int(sys.argv[1])
+    max_Num_Source = int(sys.argv[2])
+
+    reps = range(rep)
+    max_N_Ss = (np.ones(rep) * max_Num_Source).astype(int)
+
+    packed_params = [i for i in zip(reps, max_N_Ss)]
+
+    if len(sys.argv >= 4):
+        pool = Pool(int(sys.argv[3])) # Create a multiprocessing Pool
+    else:
+        pool = Pool()
+        
+    results = pool.starmap(tools.fusion_for_MP, packed_params)
     
     MSEs_seen_by_dim = {}
     MSEs_unseen_by_dim = {}

@@ -25,7 +25,7 @@ from tqdm import tqdm
 import tools
 
 
-def fusion_for_MP(rep):
+def fusion_for_MP(rep, max_Num_Source):
 
     ################################################################################
     # Part 1 - Parameters Init
@@ -34,7 +34,7 @@ def fusion_for_MP(rep):
     ################################################################################
     # Data related parameters <START>
 
-    num_source_list = list(range(3, 5)) # Number of sources to be fused, a to b-1
+    num_source_list = list(range(3, max_Num_Source+1)) # Number of sources to be fused, a to b-1
 
     num_per_perm_list_train = [1, 10, 50, 100] # Each permutation gets the same number of samples, try different values here for train set
     num_per_perm_list_test = [10] # Each permutation gets the same number of samples

@@ -1,8 +1,9 @@
 data/
 unused/
 trained_models/
-playground.*
+playground*
 .DS_Store
 .ipynb_checkpoints/
-output/
+output*/
 __pycache__/
+*Test*
