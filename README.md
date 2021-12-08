@@ -21,7 +21,7 @@ Ignore ipynb files for now, these are files I used to build up the final code. T
 
 **Command**
 ```
-python Fusion\ 1\ -\ All\ In\ One\ -\ MP.py <repetition> <max_Num_Sources> <multi_process>
+python Fusion1-MP.py <repetition> <max_Num_Sources> <multi_process>
 ```
 <p>The command takes 2 or 3 parameters besides the .py file.</p>
 
