@@ -36,7 +36,7 @@ def fusion(rep, max_Num_Source):
 
     num_source_list = list(range(3, max_Num_Source+1)) # Number of sources to be fused, a to b-1
 
-    num_per_perm_list_train = [1, 10, 50, 100] # Each permutation gets the same number of samples, try different values here for train set
+    num_per_perm_list_train = [1, 5, 20] # Each permutation gets the same number of samples, try different values here for train set
     num_per_perm_list_test = [10] # Each permutation gets the same number of samples
 
     distributions = ['uniform', 'Gaussian', 'polarized', 'random Gaussian'] # Use to discuss whether the distribution of data could have an impact on result
@@ -76,7 +76,7 @@ def fusion(rep, max_Num_Source):
             weight_legend.append(' '.join(map(str, (w*10).astype(int))))
         avg_names[num_source] = ['Min', 'Max', 'Mean'] + weight_legend
 
-    train_group_num_limit = math.factorial(5)
+    train_group_num_limit = math.factorial(4)
 
     # Data related parameters <END>
     ################################################################################
@@ -85,13 +85,25 @@ def fusion(rep, max_Num_Source):
     ################################################################################
     # Other parameters <START>
 
-    models = [tools.Choquet_Integral_QP]
-    model_names = ['QP']
+    # models = [tools.Choquet_Integral_QP]
+    # model_names = ['QP']
 
-    # models = [tools.Choquet_Integral_QP, tools.Choquet_Integral_NN]
-    # model_names = ['QP', 'NN']
+    # models = [tools.Choquet_Integral_NN]
+    # model_names = ['NN']
+
+    models = [tools.Choquet_Integral_QP, tools.Choquet_Integral_NN]
+    model_names = ['QP', 'NN']
 
     output_dir = 'output/'
+
+    params = {'num_source_list': num_source_list,
+              'num_per_perm_list_train': num_per_perm_list_train,
+              'num_per_perm_list_test': num_per_perm_list_test,
+              'distributions': distributions,
+              'weights': weights,
+              'avg_names': avg_names,
+              'train_group_num_limit': train_group_num_limit,
+              'model_names': model_names}
 
     # Other parameters <END>
     ################################################################################
@@ -101,7 +113,7 @@ def fusion(rep, max_Num_Source):
     ################################################################################
     # Part 2 - Run
     ################################################################################
-
+ 
     MSEs_seen_by_num_source = {}
     MSEs_unseen_by_num_source = {}
     FM_by_num_source = {}
@@ -130,10 +142,10 @@ def fusion(rep, max_Num_Source):
                 step = 1
 
             # Mean Squared Error [for each repetition, for each avg function, for each model, for each percentage, for each data#perperm, for each num_source], of all test samples, for both seen and unseen data.
-            MSEs_seen = np.zeros( (len(distributions), len(num_per_perm_list_train), len(range(step-1, num_perms, step)), len(avg_funcs), len(models)) )
-            MSEs_unseen = np.zeros( (len(distributions), len(num_per_perm_list_train), len(range(step-1, num_perms, step))-1, len(avg_funcs), len(models)) )
+            MSEs_seen = np.zeros( (len(num_per_perm_list_train), len(range(step-1, num_perms, step)), len(avg_funcs), len(models)) )
+            MSEs_unseen = np.zeros( (len(num_per_perm_list_train), len(range(step-1, num_perms, step))-1, len(avg_funcs), len(models)) )
             # Record FM after train session with both seen and unseen data pattern
-            FM = np.zeros( (len(distributions), len(num_per_perm_list_train), len(range(step-1, num_perms, step)), len(avg_funcs), len(models), 2**num_source-1) )
+            FM = np.zeros( (len(num_per_perm_list_train), len(range(step-1, num_perms, step)), len(avg_funcs), len(models), 2**num_source-1) )
 
             ################################################################################
             # For Loop 3
@@ -210,31 +222,31 @@ def fusion(rep, max_Num_Source):
                                 lr = 0.05 # Learning rate
                                 num_epoch = 100
                                 criterion = torch.nn.MSELoss(reduction='mean')
-                                optimizer = torch.optim.SGD(chi_model.parameters(), lr=lr)
+                                optimizer = torch.optim.Adam(chi_model.parameters(), lr=lr)
                                 
                                 # Train 
                                 tools.train_chinn(chi_model, lr, criterion, optimizer, num_epoch, torch.tensor(train_d, dtype=torch.float), torch.tensor(train_label, dtype=torch.float))
                                 # Get fuzzy measure learned
                                 FM_learned = (chi_model.chi_nn_vars(chi_model.vars).cpu()).detach().numpy()
                                 fm_dict_binary = dict(zip(keys, FM_learned[:,0]))
-                                fm_dict_lexicographic = tools.get_keys_index(num_source)
+                                fm_dict_lexicographic = tools.init_FM(num_source)
                                 for key in fm_dict_lexicographic.keys():
                                     fm_dict_lexicographic[key] = fm_dict_binary[key]
                                 fm = fm_dict_lexicographic
                                 
 
                             
-                            FM[dist_idx, npp_idx, perc_idx, avg_idx, model_idx, :] = np.asarray(list(fm.values()))
+                            FM[npp_idx, perc_idx, avg_idx, model_idx, :] = np.asarray(list(fm.values()))
                             # Calculate result from integral with test data
                             test_output = np.apply_along_axis(tools.get_cal_chi(fm), 1, test_d)
                             MSE = ((test_output - test_label)**2).mean()
-                            MSEs_seen[dist_idx, npp_idx, perc_idx, avg_idx, model_idx] = MSE
+                            MSEs_seen[npp_idx, perc_idx, avg_idx, model_idx] = MSE
                             # Calculate result from integral with test data - unseen
                             if perc < num_perms-1:
                                 test_label_unseen = avg_func(test_d_unseen, 1)
                                 test_out_unseen = np.apply_along_axis(tools.get_cal_chi(fm), 1, test_d_unseen)
-                                MSEs_unseen[dist_idx, npp_idx, perc_idx, avg_idx, model_idx] = ((test_out_unseen - test_label_unseen)**2).mean()
-                                
+                                MSEs_unseen[npp_idx, perc_idx, avg_idx, model_idx] = ((test_out_unseen - test_label_unseen)**2).mean()
+
             if num_source in FM_by_num_source.keys():
                 FM_by_num_source[num_source] = np.append(FM_by_num_source[num_source], np.expand_dims(FM, axis=0), axis=0)
                 MSEs_seen_by_num_source[num_source] = np.append(MSEs_seen_by_num_source[num_source], np.expand_dims(MSEs_seen, axis=0), axis=0)
@@ -246,4 +258,4 @@ def fusion(rep, max_Num_Source):
                 
 
     print('Rep ' + str(rep) + ' done.')
-    return FM_by_num_source, MSEs_seen_by_num_source, MSEs_unseen_by_num_source
+    return FM_by_num_source, MSEs_seen_by_num_source, MSEs_unseen_by_num_source, params

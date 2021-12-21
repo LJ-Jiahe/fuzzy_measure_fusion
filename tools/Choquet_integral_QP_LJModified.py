@@ -121,7 +121,7 @@ class Choquet_Integral_QP:
 
         vls = np.arange(1, self.N + 1)
         line = np.zeros(fm_len)
-        G = line
+        G = line 
         line[index_keys[str(np.array([1]))]] = -1.
         h = np.array([0.])
         for i in range(2, self.N + 1):

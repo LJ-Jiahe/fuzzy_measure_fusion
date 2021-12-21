@@ -42,7 +42,7 @@ def train_chinn(chinn, lr, criterion, optimizer, num_epoch, train_d, train_label
     """
     for epoch in range(num_epoch):
         # Forward pass: Compute predicted y by passing x to the model
-        y_pred = chinn(train_d.transpose(0, 1))
+        y_pred = chinn(train_d)
         # Compute the loss
         loss = criterion(torch.squeeze(y_pred, dim=1), train_label)
         # Zero gradients, perform a backward pass, and update the weights.

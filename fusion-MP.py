@@ -28,6 +28,15 @@ import tools
 
 
 if __name__ == '__main__':
+
+    # Read args
+    if len(sys.argv) == 3:
+        pool = Pool()
+    elif len(sys.argv) == 4:
+        pool = Pool(int(sys.argv[3])) # Create a multiprocessing Pool
+    else:
+        sys.exit("Usage: python fusion-MP.py <repetition> <max_Num_Sources> <multi_process>")    
+
     rep = int(sys.argv[1])
     max_Num_Source = int(sys.argv[2])
 
@@ -36,27 +45,26 @@ if __name__ == '__main__':
 
     packed_params = [i for i in zip(reps, max_N_Ss)]
 
-    if len(sys.argv) >= 4:
-        pool = Pool(int(sys.argv[3])) # Create a multiprocessing Pool
-    else:
-        pool = Pool()
-        
+    
+    # Actual fusion
     results = pool.starmap(tools.fusion, packed_params)
     
-    MSEs_seen_by_dim = {}
-    MSEs_unseen_by_dim = {}
-    FM_by_dim = {}
+
+    # Repack output & save
+    MSEs_seen_by_num_source = {}
+    MSEs_unseen_by_num_source = {}
+    FM_by_num_source = {}
     
     for result in results:
         for k in result[0].keys():
-            if k in FM_by_dim.keys():
-                FM_by_dim[k] = np.append(FM_by_dim[k], result[0][k], axis=0)
-                MSEs_seen_by_dim[k] = np.append(MSEs_seen_by_dim[k], result[1][k], axis=0)
-                MSEs_unseen_by_dim[k] = np.append(MSEs_unseen_by_dim[k], result[2][k], axis=0)
+            if k in FM_by_num_source.keys():
+                FM_by_num_source[k] = np.append(FM_by_num_source[k], np.expand_dims(result[0][k], axis=0), axis=0)
+                MSEs_seen_by_num_source[k] = np.append(MSEs_seen_by_num_source[k], np.expand_dims(result[1][k], axis=0), axis=0)
+                MSEs_unseen_by_num_source[k] = np.append(MSEs_unseen_by_num_source[k], np.expand_dims(result[2][k], axis=0), axis=0)
             else:
-                FM_by_dim[k] = result[0][k]
-                MSEs_seen_by_dim[k] = result[1][k]
-                MSEs_unseen_by_dim[k] = result[2][k]
+                FM_by_num_source[k] = np.expand_dims(result[0][k], axis=0)
+                MSEs_seen_by_num_source[k] = np.expand_dims(result[1][k], axis=0)
+                MSEs_unseen_by_num_source[k] = np.expand_dims(result[2][k], axis=0)
 
     output_dir = 'output/'
     now = datetime.datetime.now().strftime("-%m-%d-%Y@%H.%M.%S")
@@ -65,8 +73,9 @@ if __name__ == '__main__':
         os.makedirs(output_dir)
 
     with open(output_dir + 'ChI_saved_file' + now, 'wb') as f:
-        pickle.dump(FM_by_dim, f)
-        pickle.dump(MSEs_seen_by_dim, f)
-        pickle.dump(MSEs_unseen_by_dim, f)
+        pickle.dump(FM_by_num_source, f)
+        pickle.dump(MSEs_seen_by_num_source, f)
+        pickle.dump(MSEs_unseen_by_num_source, f)
+        pickle.dump(result[3], f)
         
         
