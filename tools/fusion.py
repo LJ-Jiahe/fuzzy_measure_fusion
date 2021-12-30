@@ -36,10 +36,11 @@ def fusion(rep, max_Num_Source):
 
     num_source_list = list(range(3, max_Num_Source+1)) # Number of sources to be fused, a to b-1
 
-    num_per_perm_list_train = [1, 5, 20] # Each permutation gets the same number of samples, try different values here for train set
+    num_per_perm_list_train = [1, 5, 10] # Each permutation gets the same number of samples, try different values here for train set
     num_per_perm_list_test = [10] # Each permutation gets the same number of samples
 
-    distributions = ['uniform', 'Gaussian', 'polarized', 'random Gaussian'] # Use to discuss whether the distribution of data could have an impact on result
+    distributions = ['uniform', 'Gaussian', 'polarized']
+    # distributions = ['uniform', 'Gaussian', 'polarized', 'random Gaussian'] # Use to discuss whether the distribution of data could have an impact on result
 
     weights = {3: np.asarray([[0.1, 0.8, 0.1],   # 1 large, 2 small, else 0
                               [0.0, 0.5, 0.5],   # 2 large, else 0
@@ -76,7 +77,7 @@ def fusion(rep, max_Num_Source):
             weight_legend.append(' '.join(map(str, (w*10).astype(int))))
         avg_names[num_source] = ['Min', 'Max', 'Mean'] + weight_legend
 
-    train_group_num_limit = math.factorial(4)
+    train_group_num_limit = math.factorial(5)
 
     # Data related parameters <END>
     ################################################################################

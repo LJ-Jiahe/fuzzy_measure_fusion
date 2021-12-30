@@ -71,7 +71,7 @@ for num_source in num_source_list:
                     for avg_idx, _ in enumerate(avg_names[num_source]):
                         plt.fill_between(x, MSEs_min[distribution_idx, npp_idx, :, avg_idx, model_idx], MSEs_max[distribution_idx, npp_idx, :, avg_idx, model_idx], alpha=0.1)
 
-                    plt.savefig(output_dir + '(' + data_type + ') ' + model_names[model_idx] + '-' +distr + '-' + ' NumSource=' + str(num_source) + ' NPP=' + str(num_per_perm_list_train[npp_idx]) + '.png')
+                    plt.savefig(output_dir + '(' + data_type + ') ' + model_names[model_idx] + '-' +distr + '-' + 'NumSource=' + str(num_source) + ' NPP=' + str(num_per_perm_list_train[npp_idx]) + '.png')
 
 
 
