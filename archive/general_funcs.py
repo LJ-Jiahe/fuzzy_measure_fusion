@@ -4,16 +4,17 @@ import random
 
 from numpy.random.mtrand import shuffle
 import scipy.stats
-
 import math
 import numpy as np
 
 
-class Data_Source:
+class Data_Source:  
     def __init__(self, max_num_source, max_num_per_perm, distribution):
         self.max_num_source = max_num_source
         self.max_num_per_perm = max_num_per_perm
-        self.data_by_perm, self.all_perms = create_dataset(max_num_source, max_num_per_perm, distribution)
+        self.data_by_perm, self.all_perms = create_dataset(max_num_source, 
+                                                           max_num_per_perm, 
+                                                           distribution)
     
     def get_all_perms(self):
         return self.all_perms
@@ -65,7 +66,12 @@ def create_dataset(num_source, num_per_perm, distribution):
             upper = 1
             mu = 0.5
             sigma = 0.15
-            rand_func = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu)/sigma, (upper-mu)/sigma, loc=mu, scale=sigma, size=num_source)
+            rand_func = lambda num_source: \
+                scipy.stats.truncnorm.rvs((lower-mu)/sigma, 
+                                          (upper-mu)/sigma, 
+                                          loc=mu, 
+                                          scale=sigma, 
+                                          size=num_source)
             
         elif distribution == 'polarized':
             lower = 0
@@ -73,8 +79,18 @@ def create_dataset(num_source, num_per_perm, distribution):
             mu1 = 0
             mu2 = 1
             sigma = 0.15
-            rand_func1 = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu1)/sigma, (upper-mu1)/sigma, loc=mu1, scale=sigma, size=num_source)
-            rand_func2 = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu2)/sigma, (upper-mu2)/sigma, loc=mu2, scale=sigma, size=num_source)
+            rand_func1 = lambda num_source: \
+                scipy.stats.truncnorm.rvs((lower-mu1)/sigma, 
+                                          (upper-mu1)/sigma, 
+                                          loc=mu1, 
+                                          scale=sigma, 
+                                          size=num_source)
+            rand_func2 = lambda num_source: \
+                scipy.stats.truncnorm.rvs((lower-mu2)/sigma, 
+                                          (upper-mu2)/sigma, 
+                                          loc=mu2, 
+                                          scale=sigma, 
+                                          size=num_source)
                 
         elif distribution == 'random Gaussian':
             lower = 0
@@ -92,7 +108,12 @@ def create_dataset(num_source, num_per_perm, distribution):
                 rand_func = random.choice([rand_func1, rand_func2])
             elif distribution == 'random Gaussian':
                 mu = random.uniform(0, 1)
-                rand_func = lambda num_source: scipy.stats.truncnorm.rvs((lower-mu)/sigma, (upper-mu)/sigma, loc=mu, scale=sigma, size=num_source)
+                rand_func = lambda num_source: \
+                    scipy.stats.truncnorm.rvs((lower-mu)/sigma, 
+                                              (upper-mu)/sigma, 
+                                              loc=mu, 
+                                              scale=sigma, 
+                                              size=num_source)
             
             data = np.zeros((num_per_perm, num_source))
             for i in range(num_per_perm):

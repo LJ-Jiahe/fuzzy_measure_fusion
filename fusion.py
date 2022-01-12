@@ -22,7 +22,14 @@ import torch
 from tqdm.auto import tqdm
 
 # from tools import *
-import tools
+from tools.cho_integral.cal_chi import get_cal_chi
+from tools.cho_integral.Choquet_integral_NN_LJModified import Choquet_Integral_NN, train_chinn
+from tools.cho_integral.Choquet_integral_QP_LJModified import Choquet_Integral_QP
+from tools.cho_integral.get_fm import init_FM
+from tools.data_source import Data_Source
+from tools.process_bar import pbiter
+from tools.shuffle_array import shuffle_array_columns
+from tools.w_avg import weighted_avg
 
 
 def fusion(rep, max_Num_Source):
@@ -42,10 +49,10 @@ def fusion(rep, max_Num_Source):
     distributions = ['uniform', 'Gaussian', 'polarized']
     # distributions = ['uniform', 'Gaussian', 'polarized', 'random Gaussian'] # Use to discuss whether the distribution of data could have an impact on result
 
-    weights = {3: np.asarray([[0.1, 0.8, 0.1],   # 1 large, 2 small, else 0
-                              [0.0, 0.5, 0.5],   # 2 large, else 0
-                              [0.3, 0.5, 0.2],   # 1 large = sum of else
-                              [1/3, 1/3, 1/3]]), # 3 1/3 else 0
+    weights = {3: np.asarray([[0.1, 0.8, 0.1],
+                              [0.0, 0.5, 0.5],
+                              [0.3, 0.5, 0.2],
+                              [1/3, 1/3, 1/3]]),
                4: np.asarray([[0.1, 0.8, 0.1, 0.0],
                               [0.0, 0.5, 0.5, 0.0],
                               [0.1, 0.5, 0.2, 0.2],
@@ -58,7 +65,7 @@ def fusion(rep, max_Num_Source):
                               [0.0, 0.5, 0.5, 0.0, 0.0, 0.0],
                               [0.1, 0.5, 0.1, 0.1, 0.1, 0.1],
                               [1/3, 1/3, 1/3, 0.0, 0.0, 0.0]]),
-               7: np.asarray([[0.1, 0.8, 0.1, 0.0, 0.0, 0.0, 0.0],
+               7: np.asarray([[0.1, 0.8, 0.1, 0.0, 0.0, 0.0, 0.0],                                                                                      
                               [0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0],
                               [0.1, 0.5, 0.1, 0.1, 0.1, .05, .05],
                               [1/3, 1/3, 1/3, 0.0, 0.0, 0.0, 0.0]]),
@@ -92,7 +99,7 @@ def fusion(rep, max_Num_Source):
     # models = [tools.Choquet_Integral_NN]
     # model_names = ['NN']
 
-    models = [tools.Choquet_Integral_QP, tools.Choquet_Integral_NN]
+    models = [Choquet_Integral_QP, Choquet_Integral_NN]
     model_names = ['QP', 'NN']
 
     output_dir = 'output/'
@@ -121,18 +128,18 @@ def fusion(rep, max_Num_Source):
 
     ################################################################################
     # For Loop 1
-    for dist_idx, distribution in enumerate(tools.pbiter(distributions)):
+    for dist_idx, distribution in enumerate(pbiter(distributions)):
         # Create data source, an ndarray that contains input in the columns, grouped by permutation
-        train_data_source = tools.Data_Source(num_source_list[-1], num_per_perm_list_train[-1], distribution)  
-        test_data_source = tools.Data_Source(num_source_list[-1], num_per_perm_list_test[-1], distribution)  
+        train_data_source = Data_Source(num_source_list[-1], num_per_perm_list_train[-1], distribution)  
+        test_data_source = Data_Source(num_source_list[-1], num_per_perm_list_test[-1], distribution)  
 
         ################################################################################
         # For Loop 2
-        for num_source in tools.pbiter(num_source_list):
+        for num_source in pbiter(num_source_list):
             
             # Switch out arbitrary avg funcs to new num_source
             for avg_idx in range(len(weights[num_source])):
-                avg_funcs[3+avg_idx] = tools.weighted_avg(weights[num_source][avg_idx])
+                avg_funcs[3+avg_idx] = weighted_avg(weights[num_source][avg_idx])
              
             # When the # of possible permutations exceed certain number (in here 5!), 
             # instead of feeding only one more permutation a time, feed more.
@@ -150,7 +157,7 @@ def fusion(rep, max_Num_Source):
 
             ################################################################################
             # For Loop 3
-            for npp_idx, num_per_perm_train in enumerate(tools.pbiter(num_per_perm_list_train)):
+            for npp_idx, num_per_perm_train in enumerate(pbiter(num_per_perm_list_train)):
 
                 # Shuffle the order of permutations fed to model in train session
                 all_perms = list(permutations(list(range(num_source))))
@@ -164,7 +171,7 @@ def fusion(rep, max_Num_Source):
 
                 ################################################################################
                 # For Loop 4
-                for perc_idx, perc in enumerate(tools.pbiter(range(step-1, num_perms, step))):
+                for perc_idx, perc in enumerate(pbiter(range(step-1, num_perms, step))):
                     
                     # Find index of train/test sample in superset and shuffle
                     # train_idx = np.concatenate(train_idx_by_perm[0:perc+1])
@@ -181,7 +188,7 @@ def fusion(rep, max_Num_Source):
 
                     # Find data sample through index
                     train_d = train_data_by_perm[0:num_per_perm_train*(perc+1), :]
-                    train_d = tools.shuffle_array_columns(train_d)
+                    train_d = shuffle_array_columns(train_d)
                     test_d = test_data_by_perm[0:num_per_perm_list_test[0]*(perc+1), :]
                     test_d_unseen = test_data_by_perm[num_per_perm_list_test[0]*(perc+1):, :]
 
@@ -196,7 +203,7 @@ def fusion(rep, max_Num_Source):
 
                     # Define subsets of 'X', or keys for fuzzy measure. Like '1 2' or '1 3 4 5' for g(x1, x2) or g(x1, x3, x4, x5)
                     # sourcesInNode, subset = tools.sources_and_subsets_nodes(num_source)
-                    keys = list(tools.init_FM(num_source).keys())
+                    keys = list(init_FM(num_source).keys())
                     
                     ################################################################################
                     # For Loop 5
@@ -226,11 +233,11 @@ def fusion(rep, max_Num_Source):
                                 optimizer = torch.optim.Adam(chi_model.parameters(), lr=lr)
                                 
                                 # Train 
-                                tools.train_chinn(chi_model, lr, criterion, optimizer, num_epoch, torch.tensor(train_d, dtype=torch.float), torch.tensor(train_label, dtype=torch.float))
+                                train_chinn(chi_model, lr, criterion, optimizer, num_epoch, torch.tensor(train_d, dtype=torch.float), torch.tensor(train_label, dtype=torch.float))
                                 # Get fuzzy measure learned
                                 FM_learned = (chi_model.chi_nn_vars(chi_model.vars).cpu()).detach().numpy()
                                 fm_dict_binary = dict(zip(keys, FM_learned[:,0]))
-                                fm_dict_lexicographic = tools.init_FM(num_source)
+                                fm_dict_lexicographic = init_FM(num_source)
                                 for key in fm_dict_lexicographic.keys():
                                     fm_dict_lexicographic[key] = fm_dict_binary[key]
                                 fm = fm_dict_lexicographic
@@ -239,13 +246,13 @@ def fusion(rep, max_Num_Source):
                             
                             FM[npp_idx, perc_idx, avg_idx, model_idx, :] = np.asarray(list(fm.values()))
                             # Calculate result from integral with test data
-                            test_output = np.apply_along_axis(tools.get_cal_chi(fm), 1, test_d)
+                            test_output = np.apply_along_axis(get_cal_chi(fm), 1, test_d)
                             MSE = ((test_output - test_label)**2).mean()
                             MSEs_seen[npp_idx, perc_idx, avg_idx, model_idx] = MSE
                             # Calculate result from integral with test data - unseen
                             if perc < num_perms-1:
                                 test_label_unseen = avg_func(test_d_unseen, 1)
-                                test_out_unseen = np.apply_along_axis(tools.get_cal_chi(fm), 1, test_d_unseen)
+                                test_out_unseen = np.apply_along_axis(get_cal_chi(fm), 1, test_d_unseen)
                                 MSEs_unseen[npp_idx, perc_idx, avg_idx, model_idx] = ((test_out_unseen - test_label_unseen)**2).mean()
 
             if num_source in FM_by_num_source.keys():
