@@ -24,7 +24,7 @@ import numpy as np
 # from tqdm import tqdm
 
 # from tools import *
-from fusion import fusion
+from tools.fusion import fusion
 
 
 def fusion_multi_process():
