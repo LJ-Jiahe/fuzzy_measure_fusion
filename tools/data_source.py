@@ -2,7 +2,7 @@ from itertools import permutations
 import random
 
 import numpy as np
-import scipy
+import scipy.stats
 
 
 class Data_Source:  
@@ -10,8 +10,8 @@ class Data_Source:
         self.max_num_source = max_num_source
         self.max_num_per_perm = max_num_per_perm
         self.data_by_perm, self.all_perms = self.create_dataset(max_num_source, 
-                                                           max_num_per_perm, 
-                                                           distribution)
+                                                                max_num_per_perm, 
+                                                                distribution)
     
     def get_all_perms(self):
         return self.all_perms
@@ -37,7 +37,7 @@ class Data_Source:
             
         return data_by_perm
     
-    def create_dataset(num_source, num_per_perm, distribution):
+    def create_dataset(self, num_source, num_per_perm, distribution):
         """
         Create a dataset with all possible permutation, with each permutation having the same number of samples.
         
@@ -64,10 +64,10 @@ class Data_Source:
                 sigma = 0.15
                 rand_func = lambda num_source: \
                     scipy.stats.truncnorm.rvs((lower-mu)/sigma, 
-                                            (upper-mu)/sigma, 
-                                            loc=mu, 
-                                            scale=sigma, 
-                                            size=num_source)
+                                              (upper-mu)/sigma, 
+                                              loc=mu, 
+                                              scale=sigma, 
+                                              size=num_source)
                 
             elif distribution == 'polarized':
                 lower = 0
@@ -77,16 +77,16 @@ class Data_Source:
                 sigma = 0.15
                 rand_func1 = lambda num_source: \
                     scipy.stats.truncnorm.rvs((lower-mu1)/sigma, 
-                                            (upper-mu1)/sigma, 
-                                            loc=mu1, 
-                                            scale=sigma, 
-                                            size=num_source)
+                                              (upper-mu1)/sigma, 
+                                              loc=mu1, 
+                                              scale=sigma, 
+                                              size=num_source)
                 rand_func2 = lambda num_source: \
                     scipy.stats.truncnorm.rvs((lower-mu2)/sigma, 
-                                            (upper-mu2)/sigma, 
-                                            loc=mu2, 
-                                            scale=sigma, 
-                                            size=num_source)
+                                              (upper-mu2)/sigma, 
+                                              loc=mu2, 
+                                              scale=sigma, 
+                                              size=num_source)
                     
             elif distribution == 'random Gaussian':
                 lower = 0

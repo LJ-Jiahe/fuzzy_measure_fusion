@@ -65,7 +65,7 @@ def fusion_multi_process():
                 MSEs_seen_by_num_source[k] = np.expand_dims(result[1][k], axis=0)
                 MSEs_unseen_by_num_source[k] = np.expand_dims(result[2][k], axis=0)
 
-    output_dir = 'output/'
+    output_dir = 'output/result/'
     now = datetime.datetime.now().strftime("%m-%d-%Y@%H.%M.%S")
 
     if not os.path.exists(output_dir):
