@@ -73,7 +73,7 @@ train_group_num_limit = math.factorial(5)
 models = [Choquet_Integral_QP, Choquet_Integral_NN]
 model_names = ['QP', 'NN']
 
-result_dir = 'output/result/'
+result_dir = 'output/results/'
 
 params = {'num_source_list': num_source_list,
           'num_per_perm_list_train': num_per_perm_list_train,
