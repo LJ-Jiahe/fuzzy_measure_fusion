@@ -67,7 +67,7 @@ def fusion(rep):
 
     ################################################################################
     # For Loop 1
-    for num_source in num_source_list:
+    for num_source in pbiter(num_source_list):
         # Shuffle the order of permutations fed to model in train session
         all_perms = list(permutations(list(range(num_source))))
         random.shuffle(all_perms) # or random.Random(random_seed).shuffle(all_perms)
@@ -109,11 +109,11 @@ def fusion(rep):
 
         ################################################################################
         # For Loop 2
-        for dist_idx, distribution in enumerate(distributions):
+        for dist_idx, distribution in enumerate(pbiter(distributions)):
 
             ################################################################################
             # For Loop 3
-            for npp_idx, num_per_perm_train in enumerate(num_per_perm_list_train):
+            for npp_idx, num_per_perm_train in enumerate(pbiter(num_per_perm_list_train)):
                 # Get data_by_perm based on num_source & num_per_perm
                 train_data_by_perm = \
                     create_dataset(num_source, num_per_perm_train, distribution, all_perms)
@@ -126,7 +126,7 @@ def fusion(rep):
 
                 ################################################################################
                 # For Loop 4
-                for perc_idx, perc in enumerate(range(step-1, num_perms, step)):
+                for perc_idx, perc in enumerate(pbiter(range(step-1, num_perms, step))):
                     # Find data sample through index
                     train_d = train_data_by_perm[0:num_per_perm_train*(perc+1), :]
                     np.random.shuffle(train_d)
