@@ -30,7 +30,7 @@ def merge_output():
             else:
                 for key in first_params.keys():
                     try:
-                        if params[key] == first_params[key]:
+                        if (params[key] == first_params[key]):
                             continue
                         else:
                             sys.exit('Parameter value inconsistent')
@@ -80,5 +80,3 @@ def merge_output():
         pickle.dump(first_params, f)
 
     print('Outputs successfully merged! Saved to ./' + output_dir)
-    for key in first_params.keys():
-        print(first_params[key])

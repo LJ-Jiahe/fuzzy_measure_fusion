@@ -1,82 +1,81 @@
 # Imports
 
 import datetime
-# import itertools
-# from itertools import permutations
-# import math
 from multiprocessing import Pool
 import os
 import pickle
-# import platform
-# import random
 import sys
-# from tkinter import Tk
 
-# from cvxopt import solvers, matrix
-# from matplotlib import animation
-# from matplotlib import pyplot as plt
-# from matplotlib.ticker import FuncFormatter
 import numpy as np
-# import torch
-# import torchvision
-# from torchvision import transforms, models,datasets
-# from torch.utils.data import Dataset, DataLoader
-# from tqdm import tqdm
 
-# from tools import *
-from tools.fusion import fusion
+from tools import fusion
+import constants as c
 
 
 def fusion_multi_process():
-    # Read args
+    ################################################################################
+    # Read args <START>
     if len(sys.argv) == 3:
         pool = Pool()
     elif len(sys.argv) == 4:
         pool = Pool(int(sys.argv[3])) # Create a multiprocessing Pool
     else:
-        sys.exit("Usage: python fusion-MP.py <repetition> <max_Num_Sources> <multi_process>")    
-
+        sys.exit("Usage: python fusion-MP.py <repetition> <max_Num_Sources> <multi_process> \n" +
+                  "If <multi_process> is not assigned, the program will use as many threads as possible, " +
+                  "but not exceeding <repetition>.")    
     rep = int(sys.argv[1])
     max_Num_Source = int(sys.argv[2])
+    c.num_source_list = list(range(3, max_Num_Source+1))
+    # Read args <END>
+    ################################################################################
 
+
+    ################################################################################
+    # Run child processes <START>
     reps = range(rep)
-    max_N_Ss = (np.ones(rep) * max_Num_Source).astype(int)
+    # max_NSs = np.full(rep, max_Num_Source)
+    # packed_params = [params for params in zip(reps, max_NSs)]
+    results = pool.map(fusion, reps)
+    # Run child processes <END>
+    ################################################################################
 
-    packed_params = [i for i in zip(reps, max_N_Ss)]
 
-    
-    # Actual fusion
-    results = pool.starmap(fusion, packed_params)
-    
+    ################################################################################
+    # Reorganize results <START>
+    results_FMs = [result[0] for result in results]
+    results_MSEs_seen = [result[1] for result in results]
+    results_MSEs_unseen = [result[2] for result in results]
 
-    # Repack output & save
+    FMs_by_num_source = {}
     MSEs_seen_by_num_source = {}
     MSEs_unseen_by_num_source = {}
-    FM_by_num_source = {}
-    
-    for result in results:
-        for k in result[0].keys():
-            if k in FM_by_num_source.keys():
-                FM_by_num_source[k] = np.append(FM_by_num_source[k], np.expand_dims(result[0][k], axis=0), axis=0)
-                MSEs_seen_by_num_source[k] = np.append(MSEs_seen_by_num_source[k], np.expand_dims(result[1][k], axis=0), axis=0)
-                MSEs_unseen_by_num_source[k] = np.append(MSEs_unseen_by_num_source[k], np.expand_dims(result[2][k], axis=0), axis=0)
-            else:
-                FM_by_num_source[k] = np.expand_dims(result[0][k], axis=0)
-                MSEs_seen_by_num_source[k] = np.expand_dims(result[1][k], axis=0)
-                MSEs_unseen_by_num_source[k] = np.expand_dims(result[2][k], axis=0)
 
-    output_dir = 'output/result/'
+    for num_source in results_FMs[0].keys():
+        stacked_FMs = np.stack([r[num_source] for r in results_FMs], axis=0)
+        stacked_MSEs_seen = np.stack([r[num_source] for r in results_MSEs_seen], axis=0)
+        stacked_MSEs_unseen = np.stack([r[num_source] for r in results_MSEs_unseen], axis=0)
+        
+        FMs_by_num_source[num_source] = stacked_FMs
+        MSEs_seen_by_num_source[num_source] = stacked_MSEs_seen
+        MSEs_unseen_by_num_source[num_source] = stacked_MSEs_unseen
+    # Reorganize results <END>
+    ################################################################################
+
+
+    ################################################################################
+    # Save results to file <START>
     now = datetime.datetime.now().strftime("%m-%d-%Y@%H.%M.%S")
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not os.path.exists(c.result_dir):
+        os.makedirs(c.result_dir)
 
-    with open(output_dir + 'ChI_saved_file_' + now, 'wb') as f:
-        pickle.dump(FM_by_num_source, f)
+    with open(c.result_dir + 'result_' + now, 'wb') as f:
+        pickle.dump(FMs_by_num_source, f)
         pickle.dump(MSEs_seen_by_num_source, f)
         pickle.dump(MSEs_unseen_by_num_source, f)
-        pickle.dump(result[3], f)
-
+        pickle.dump(c.params, f)
+    # Save results to file <END>
+    ################################################################################
 
 
 if __name__ == '__main__':
