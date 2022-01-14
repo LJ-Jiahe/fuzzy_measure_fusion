@@ -37,7 +37,6 @@ def fusion(rep):
     ################################################################################
     # Part 1 - Parameters Init <START>
     num_source_list = c.num_source_list.copy() # Number of sources to be fused, a to b-1
-
     num_per_perm_list_train = c.num_per_perm_list_train.copy() # Each permutation gets the same number of samples, try different values here for train set
     num_per_perm_list_test = c.num_per_perm_list_test.copy() # Each permutation gets the same number of samples
 

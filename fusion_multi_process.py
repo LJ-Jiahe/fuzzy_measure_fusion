@@ -25,7 +25,6 @@ def fusion_multi_process():
                   "but not exceeding <repetition>.")    
     rep = int(sys.argv[1])
     max_Num_Source = int(sys.argv[2])
-    c.num_source_list = list(range(3, max_Num_Source+1))
     # Read args <END>
     ################################################################################
 
