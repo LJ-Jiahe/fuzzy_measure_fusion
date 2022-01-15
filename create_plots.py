@@ -10,17 +10,12 @@ import numpy as np
 from tools.plot import plot_distributions, plot_models, plot_NPP, plot_operators, plot_svsuns
 
 # Load output file
-output_file = askopenfilename(title='Load output file', initialdir='./output/result')
+output_file = askopenfilename(title='Load output file', initialdir='./output/results')
 with open(output_file, 'rb') as f:
     FM_by_num_source = pickle.load(f)
     MSEs_seen_by_num_source = pickle.load(f)
     MSEs_unseen_by_num_source = pickle.load(f)
     params = pickle.load(f)
-
-# for key in params.keys():
-#     globals()[key] = params[key]
-
-
 
 output_dir = './output/plots-distributions/'
 if not os.path.exists(output_dir):

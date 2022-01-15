@@ -193,9 +193,9 @@ def fusion(rep):
                                 MSEs_unseen[dist_idx, npp_idx, perc_idx, avg_idx, model_idx] = MSE
 
 
-    FMs_by_num_source[num_source] = FMs
-    MSEs_seen_by_num_source[num_source] = MSEs_seen
-    MSEs_unseen_by_num_source[num_source] = MSEs_unseen
+        FMs_by_num_source[num_source] = FMs
+        MSEs_seen_by_num_source[num_source] = MSEs_seen
+        MSEs_unseen_by_num_source[num_source] = MSEs_unseen
 
 
             # if num_source in FMs_by_num_source.keys():
