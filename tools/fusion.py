@@ -64,9 +64,13 @@ def fusion(rep):
     MSEs_unseen_by_num_source = {}
     FMs_by_num_source = {}
 
+    pbar = tqdm(total=len(num_source_list) * 
+                      len(distributions) * 
+                      len(num_per_perm_list_train))
+
     ################################################################################
     # For Loop 1
-    for num_source in pbiter(num_source_list):
+    for num_source in num_source_list:
         # Shuffle the order of permutations fed to model in train session
         all_perms = list(permutations(list(range(num_source))))
         random.shuffle(all_perms) # or random.Random(random_seed).shuffle(all_perms)
@@ -108,34 +112,27 @@ def fusion(rep):
 
         ################################################################################
         # For Loop 2
-        for dist_idx, distribution in enumerate(pbiter(distributions)):
+        for dist_idx, distribution in enumerate(distributions):
 
             ################################################################################
             # For Loop 3
-            for npp_idx, num_per_perm_train in enumerate(pbiter(num_per_perm_list_train)):
+            for npp_idx, num_per_perm_train in enumerate(num_per_perm_list_train):
                 # Get data_by_perm based on num_source & num_per_perm
                 train_data_by_perm = \
                     create_dataset(num_source, num_per_perm_train, distribution, all_perms)
                 test_data_by_perm = \
                     create_dataset(num_source, num_per_perm_list_test[0], distribution, all_perms)
-                # print('printing perms')
-                # print(all_perms)
-                # print(train_data_by_perm.argsort(axis=1).argsort(1))
-                # print(test_data_by_perm.argsort(axis=1).argsort(1))
+                
+                pbar.update(1)
 
                 ################################################################################
                 # For Loop 4
-                for perc_idx, perc in enumerate(pbiter(range(step-1, num_perms, step))):
+                for perc_idx, perc in enumerate(range(step-1, num_perms, step)):
                     # Find data sample through index
                     train_d = train_data_by_perm[0:num_per_perm_train*(perc+1), :]
                     np.random.shuffle(train_d)
                     test_d = test_data_by_perm[0:num_per_perm_list_test[0]*(perc+1), :]
                     test_d_unseen = test_data_by_perm[num_per_perm_list_test[0]*(perc+1):, :]
-                    # print('printing perms')
-                    # print(all_perms)
-                    # print(train_d.argsort(axis=1).argsort(1))
-                    # print(test_d.argsort(axis=1).argsort(1))
-                    # print(test_d_unseen.argsort(axis=1).argsort(1))
                     
                     ################################################################################
                     # For Loop 5
