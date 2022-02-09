@@ -12,7 +12,7 @@ from tools.cho_integral import Choquet_Integral_QP, Choquet_Integral_NN
 ################################################################################
 # Data related parameters <START>
 
-num_source_list = list(range(3, 9)) # Number of sources to be fused, a to b-1
+num_source_list = list(range(3, 7)) # Number of sources to be fused, a to b-1
 
 num_per_perm_list_train = [1, 2, 5] # Each permutation gets the same number of samples, try different values here for train set
 num_per_perm_list_test = [10] # Each permutation gets the same number of samples
@@ -83,5 +83,24 @@ params = {'num_source_list': num_source_list,
           'train_group_num_limit': train_group_num_limit,
           'model_names': model_names}
 
+
+
 # Other parameters <END>
+################################################################################
+
+
+################################################################################
+# Plot parameters <START>
+plot_size = (4, 3)
+
+font_size = 8
+
+xlabel = 'Percentage of Observed Permutations'
+
+ylabel = 'Mean Squared Error'
+
+axis_left = 0.15
+
+axis_right = 0.95
+# Plot parameters <END>
 ################################################################################

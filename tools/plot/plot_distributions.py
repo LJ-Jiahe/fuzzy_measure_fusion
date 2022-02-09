@@ -4,7 +4,7 @@ from matplotlib.ticker import FuncFormatter
 import numpy as np
 
 
-def plot_distributions(MSEs_unseen_by_num_source, params, output_dir):
+def plot_distributions(MSEs_unseen_by_num_source, params, output_dir, axis_left=0.15, axis_right=0.95, y_limit=[-0.08/20, 0.08]):
 
     for key in params.keys():
         globals()[key] = params[key]
@@ -29,18 +29,20 @@ def plot_distributions(MSEs_unseen_by_num_source, params, output_dir):
                     x_unseen = (np.arange(MSEs_unseen_mean.shape[2])+1) / (MSEs_unseen_mean.shape[2]+1)
 
                     fig, ax = plt.subplots()
+                    plt.subplots_adjust(left=axis_left, right=axis_right)
                     plt.plot(x_unseen, MSEs_unseen_mean[:, npp_idx, :, avg_idx, model_idx].transpose())
 
                     for distribution_idx, distr in enumerate(distributions):
                         plt.fill_between(x_unseen, MSEs_unseen_min[distribution_idx, npp_idx, :, avg_idx, model_idx], MSEs_unseen_max[distribution_idx, npp_idx, :, avg_idx, model_idx], alpha=0.1)
                     # plt.xticks(x_seen)
-                    ax.set_title('Model=' + model_name + ', NumSource=' + str(num_source) + ', NPP=' + str(npp) + ', Avg Func=' + avg_name)
+                    ax.set_title('Model=' + model_name + ', Num of Source=' + str(num_source) + ',\nSample Per Permutation=' + str(npp) + ', Operator=' + avg_name)
                     ax.legend(distributions)
-                    ax.set_xlabel('Percentage of Seen Data')
-                    ax.set_ylabel('MSEs avg')
+                    ax.set_xlabel('Percentage of Observed Permutations')
+                    ax.set_ylabel('MSE')
+                    # ax.set_ylim(y_limit)
                     ax.xaxis.set_major_formatter(FuncFormatter('{0:.0%}'.format))
                     ax.set_xticks(np.linspace(0, 1, num=11))
 
-                    plt.savefig(output_dir + model_name + '-' + 'NumSource=' + str(num_source) + ' NPP=' + str(npp) + ' Avg Func=' + str(avg_name) + '.png')
+                    plt.savefig(output_dir + model_name + '-' + 'NumSource=' + str(num_source) + ' NPP=' + str(npp) + ' Operator=' + str(avg_name) + '.png')
 
                     plt.close()
