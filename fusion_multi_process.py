@@ -31,8 +31,7 @@ def fusion_multi_process():
 
     ################################################################################
     # Run child processes <START>
-    reps = list(range(rep))
-    print(reps)
+    reps = range(rep)
     # max_NSs = np.full(rep, max_Num_Source)
     # packed_params = [params for params in zip(reps, max_NSs)]
     results = pool.map(fusion, reps)

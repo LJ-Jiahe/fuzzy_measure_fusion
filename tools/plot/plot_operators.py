@@ -40,7 +40,7 @@ def plot_operators(MSEs_seen_by_num_source, MSEs_unseen_by_num_source, params, o
 
                     fig, ax = plt.subplots()
                     plt.subplots_adjust(left=axis_left, right=axis_right)
-                    plt.plot(x, MSEs_mean[distribution_idx, npp_idx, :, :-1, model_idx])
+                    plt.plot(x, MSEs_mean[distribution_idx, npp_idx, :, :, model_idx])
 
                     ax.set_title('Model=' + model_name + ', Distribution=' + distr + '\nNum of Source=' + str(num_source) + ', Sample Per Sort=' + str(npp))
                     ax.legend(avg_names[num_source])

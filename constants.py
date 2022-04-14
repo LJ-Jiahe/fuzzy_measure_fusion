@@ -14,9 +14,9 @@ from tools.cho_integral import Choquet_Integral_QP, Choquet_Integral_NN
 ################################################################################
 # Data related parameters <START>
 
-num_source_list = list(range(3, 4)) # Number of sources to be fused, a to b-1
+num_source_list = list(range(3, 7)) # Number of sources to be fused, a to b-1
 
-num_per_perm_list_train = [1, 2] # Each permutation gets the same number of samples, try different values here for train set
+num_per_perm_list_train = [5] # Each permutation gets the same number of samples, try different values here for train set
 num_per_perm_list_test = [10] # Each permutation gets the same number of samples
 
 distributions = ['uniform', 'Gaussian', 'polarized']
@@ -38,7 +38,7 @@ weights = {3: np.asarray([[0.1, 0.8, 0.1],
                           [0.0, 0.5, 0.5, 0.0, 0.0, 0.0],
                           [0.1, 0.5, 0.1, 0.1, 0.1, 0.1],
                           [1/3, 1/3, 1/3, 0.0, 0.0, 0.0]]),
-           7: np.asarray([[0.1, 0.8, 0.1, 0.0, 0.0, 0.0, 0.0],                                                                                      
+           7: np.asarray([[0.1, 0.8, 0.1, 0.0, 0.0, 0.0, 0.0],
                           [0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0],
                           [0.1, 0.5, 0.1, 0.1, 0.1, .05, .05],
                           [1/3, 1/3, 1/3, 0.0, 0.0, 0.0, 0.0]]),
@@ -47,7 +47,7 @@ weights = {3: np.asarray([[0.1, 0.8, 0.1],
                           [0.1, 0.5, 0.1, 0.1, .05, .05, .05, .05],
                           [1/3, 1/3, 1/3, 0.0, 0.0, 0.0, 0.0, 0.0]]),}
 
-avg_funcs = [np.amin, np.amax, np.mean, centered_average_multi, None, None, None, None] # List of avg functions
+avg_funcs = [np.amin, np.amax, np.mean, centered_average_multi, None, None, None, None, None] # List of avg functions
 
 avg_names = {} # List of names of avg functions
 for num_source in num_source_list:
@@ -55,7 +55,7 @@ for num_source in num_source_list:
     weight_legend = []
     for w in weight:
         weight_legend.append(' '.join(map(str, (w*10).astype(int))))
-    avg_names[num_source] = ['Min', 'Max', 'Mean', 'Centered Mean'] + weight_legend
+    avg_names[num_source] = ['Min', 'Max', 'Mean', 'Centered Mean'] + weight_legend + ['Arbitrary FM']
 
 train_group_num_limit = math.factorial(6)
 

@@ -15,6 +15,7 @@ from matplotlib import animation
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import numpy as np
+from tools.cho_integral.get_fm import init_Arbitrary_FM
 import torch
 # import torchvision
 # from torchvision import transforms, models,datasets
@@ -22,7 +23,7 @@ import torch
 from tqdm.auto import tqdm
 
 # from tools import *
-from tools.cho_integral import get_cal_chi, Choquet_Integral_NN, train_chinn, Choquet_Integral_QP, init_FM
+from tools.cho_integral import get_cal_chi, Choquet_Integral_NN, train_chinn, Choquet_Integral_QP, init_FM, get_cal_chi_multi
 from tools.data_source import create_dataset
 from tools.process_bar import pbiter
 from tools.w_avg import weighted_avg
@@ -59,14 +60,15 @@ def fusion(rep):
 
     ################################################################################
     # Part 2 - Run <START>
-    # Below are where we are going to store the results from this very repetition
-    MSEs_seen_by_num_source = {}
-    MSEs_unseen_by_num_source = {}
-    FMs_by_num_source = {}
 
     pbar = tqdm(total=len(num_source_list) * 
                       len(distributions) *  
                       len(num_per_perm_list_train))
+
+    # Below are where we are going to store the results from this very repetition
+    MSEs_seen_by_num_source = {}
+    MSEs_unseen_by_num_source = {}
+    FMs_by_num_source = {}
 
     ################################################################################
     # For Loop 1
@@ -78,6 +80,8 @@ def fusion(rep):
         # Switch out arbitrary avg funcs to new num_source
         for avg_idx, weight_set in enumerate(weights[num_source]):
             avg_funcs[4+avg_idx] = weighted_avg(weight_set)
+
+        avg_funcs[-1] = get_cal_chi_multi(init_Arbitrary_FM(num_source))
 
         # When the # of possible permutations exceed certain number (in here 5!), 
         # instead of feeding only one more permutation at a time, feed more.
@@ -141,7 +145,8 @@ def fusion(rep):
                         train_label = avg_func(train_d, 1)
                         test_label = avg_func(test_d, 1)
                         if perc < num_perms-1:
-                                test_label_unseen = avg_func(test_d_unseen, 1)
+                            test_label_unseen = avg_func(test_d_unseen, 1)
+
                         ################################################################################
                         # For Loop 6
                         for model_idx, model in enumerate(models):
