@@ -13,11 +13,27 @@ def init_FM(num_source):
     for i in input_k:
         keys = np.array(list(itertools.combinations(input_k, i)))
         for k in keys:
-            FM[str(k)] = 1/2
+            FM[str(k)[1:-1]] = 1/2
         if i == num_source:
-            FM[str(keys[-1])] = 1
+            FM[str(keys[-1])[1:-1]] = 1
     return FM
 
+
+def init_Arbitrary_FM(num_source):
+    fm = init_FM(num_source)
+    singletons = np.random.random(num_source)
+    for k, v in enumerate(singletons):
+        fm[str(k+1)] = v
+
+    for l_k in range(2, num_source):
+        for key in fm.keys():
+            if len(key.split()) == l_k:
+                print(key)
+                print(np.array(list(itertools.combinations(key.split(), l_k-1))))
+
+
+
+    return fm
 
 def get_min_fm_target(num_source):
     fm = init_FM(num_source)
@@ -58,3 +74,5 @@ def w_avg_target(num_source, weight):
 
 def get_w_avg_target(weight):
     return lambda num_source: w_avg_target(num_source, weight)
+
+

@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import numpy as np
 
-from tools.plot import plot_distributions, plot_models, plot_NPP, plot_operators, plot_svsuns
+from tools.plot import plot_distributions, plot_models, plot_NPP, plot_operators, plot_svsuns, plot_num_sources
 
 import constants as c
 
@@ -26,20 +26,25 @@ plt.rcParams.update({'font.size': 13})
 # print(plt.rcParams.keys())
 
 
-output_dir = './output/plots-distributions/'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-plot_distributions(MSEs_unseen_by_num_source, params, output_dir)
+# output_dir = './output/plots-numsource/'
+# if not os.path.exists(output_dir):
+#     os.makedirs(output_dir)
+# plot_num_sources(MSEs_unseen_by_num_source, params, output_dir)
 
-output_dir = './output/plots-models/'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-plot_models(MSEs_unseen_by_num_source, params, output_dir)
+# output_dir = './output/plots-distributions/'
+# if not os.path.exists(output_dir):
+#     os.makedirs(output_dir)
+# plot_distributions(MSEs_unseen_by_num_source, params, output_dir)
 
-output_dir = './output/plots-NPP/'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-plot_NPP(MSEs_unseen_by_num_source, params, output_dir)
+# output_dir = './output/plots-models/'
+# if not os.path.exists(output_dir):
+#     os.makedirs(output_dir)
+# plot_models(MSEs_unseen_by_num_source, params, output_dir)
+
+# output_dir = './output/plots-NPP/'
+# if not os.path.exists(output_dir):
+#     os.makedirs(output_dir)
+# plot_NPP(MSEs_unseen_by_num_source, params, output_dir)
 
 output_dir = './output/plots-operators/'
 if not os.path.exists(output_dir):

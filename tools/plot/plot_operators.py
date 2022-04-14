@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import numpy as np
 
-def plot_operators(MSEs_seen_by_num_source, MSEs_unseen_by_num_source, params, output_dir, axis_left=0.15, axis_right=0.95, y_limit=[-0.08/20, 0.08]):
+def plot_operators(MSEs_seen_by_num_source, MSEs_unseen_by_num_source, params, output_dir, axis_left=0.15, axis_right=0.95, y_limit=[-0.09/20, 0.09]):
 
     for key in params.keys():
         globals()[key] = params[key]
@@ -42,11 +42,11 @@ def plot_operators(MSEs_seen_by_num_source, MSEs_unseen_by_num_source, params, o
                     plt.subplots_adjust(left=axis_left, right=axis_right)
                     plt.plot(x, MSEs_mean[distribution_idx, npp_idx, :, :-1, model_idx])
 
-                    ax.set_title('Model=' + model_name + ', Distribution=' + distr + '\nNum of Source=' + str(num_source) + ', Sample Per Permutation=' + str(npp))
+                    ax.set_title('Model=' + model_name + ', Distribution=' + distr + '\nNum of Source=' + str(num_source) + ', Sample Per Sort=' + str(npp))
                     ax.legend(avg_names[num_source])
-                    ax.set_xlabel('Percentage of Observed Permutations')
+                    ax.set_xlabel('Percentage of Observed Sorts')
                     ax.set_ylabel('MSE')
-                    # ax.set_ylim(y_limit)
+                    ax.set_ylim(y_limit)
                     ax.xaxis.set_major_formatter(FuncFormatter('{0:.0%}'.format))
                     ax.set_xticks(np.linspace(0, 1, num=11))
 

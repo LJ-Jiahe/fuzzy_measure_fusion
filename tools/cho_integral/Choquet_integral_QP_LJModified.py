@@ -122,11 +122,11 @@ class Choquet_Integral_QP:
         vls = np.arange(1, self.N + 1)
         line = np.zeros(fm_len)
         G = line 
-        line[index_keys[str(np.array([1]))]] = -1.
+        line[index_keys[str(np.array([1]))[1:-1]]] = -1.
         h = np.array([0.])
         for i in range(2, self.N + 1):
             line = np.zeros(fm_len)
-            line[index_keys[str(np.array([i]))]] = -1.
+            line[index_keys[str(np.array([i]))[1:-1]]] = -1.
             G = np.vstack((G, line))
             h = np.vstack((h, np.array([0])))
         for i in range(2, self.N + 1):
@@ -136,13 +136,13 @@ class Choquet_Integral_QP:
                     children = np.array(list(itertools.combinations(latt_pt, j)))
                     for latt_ch in children:
                         line = np.zeros(fm_len)
-                        line[index_keys[str(latt_ch)]] = 1.
-                        line[index_keys[str(latt_pt)]] = -1.
+                        line[index_keys[str(latt_ch)[1:-1]]] = 1.
+                        line[index_keys[str(latt_pt)[1:-1]]] = -1.
                         G = np.vstack((G, line))
                         h = np.vstack((h, np.array([0])))
 
         line = np.zeros(fm_len)
-        line[index_keys[str(vls)]] = 1.
+        line[index_keys[str(vls)[1:-1]]] = 1.
         G = np.vstack((G, line))
         h = np.vstack((h, np.array([1])))
 
@@ -167,8 +167,8 @@ class Choquet_Integral_QP:
         fm_coeff = np.zeros(fm_len)
         pi_i = np.argsort(-h) + 1
         for i in range(1, n):
-            fm_coeff[Lattice[str(np.sort(pi_i[:i]))]] = h[pi_i[i - 1] - 1] - h[pi_i[i] - 1]
-        fm_coeff[Lattice[str(np.sort(pi_i[:n]))]] = h[pi_i[n - 1] - 1]
+            fm_coeff[Lattice[str(np.sort(pi_i[:i]))[1:-1]]] = h[pi_i[i - 1] - 1] - h[pi_i[i] - 1]
+        fm_coeff[Lattice[str(np.sort(pi_i[:n]))[1:-1]]] = h[pi_i[n - 1] - 1]
         np.matmul(fm_coeff, np.transpose(fm_coeff))
         return fm_coeff
 
@@ -183,11 +183,11 @@ class Choquet_Integral_QP:
         count = 0
         Lattice = {}
         for i in range(0, self.N):
-            Lattice[str(np.array([vls[i]]))] = count
+            Lattice[str(np.array([vls[i]]))[1:-1]] = count
             count = count + 1
         for i in range(2, self.N + 1):
             A = np.array(list(itertools.combinations(vls, i)))
             for latt_pt in A:
-                Lattice[str(latt_pt)] = count
+                Lattice[str(latt_pt)[1:-1]] = count
                 count = count + 1
         return Lattice

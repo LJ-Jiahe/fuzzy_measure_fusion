@@ -35,9 +35,9 @@ def plot_distributions(MSEs_unseen_by_num_source, params, output_dir, axis_left=
                     for distribution_idx, distr in enumerate(distributions):
                         plt.fill_between(x_unseen, MSEs_unseen_min[distribution_idx, npp_idx, :, avg_idx, model_idx], MSEs_unseen_max[distribution_idx, npp_idx, :, avg_idx, model_idx], alpha=0.1)
                     # plt.xticks(x_seen)
-                    ax.set_title('Model=' + model_name + ', Num of Source=' + str(num_source) + ',\nSample Per Permutation=' + str(npp) + ', Operator=' + avg_name)
+                    ax.set_title('Model=' + model_name + ', Num of Source=' + str(num_source) + ',\nSample Per Sort=' + str(npp) + ', Operator=' + avg_name)
                     ax.legend(distributions)
-                    ax.set_xlabel('Percentage of Observed Permutations')
+                    ax.set_xlabel('Percentage of Observed Sorts')
                     ax.set_ylabel('MSE')
                     # ax.set_ylim(y_limit)
                     ax.xaxis.set_major_formatter(FuncFormatter('{0:.0%}'.format))

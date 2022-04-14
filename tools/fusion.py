@@ -65,7 +65,7 @@ def fusion(rep):
     FMs_by_num_source = {}
 
     pbar = tqdm(total=len(num_source_list) * 
-                      len(distributions) * 
+                      len(distributions) *  
                       len(num_per_perm_list_train))
 
     ################################################################################
@@ -77,7 +77,7 @@ def fusion(rep):
 
         # Switch out arbitrary avg funcs to new num_source
         for avg_idx, weight_set in enumerate(weights[num_source]):
-            avg_funcs[3+avg_idx] = weighted_avg(weight_set)
+            avg_funcs[4+avg_idx] = weighted_avg(weight_set)
 
         # When the # of possible permutations exceed certain number (in here 5!), 
         # instead of feeding only one more permutation at a time, feed more.
