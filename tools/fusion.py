@@ -1,36 +1,19 @@
-# Imports
 
-# import itertools
 from itertools import permutations
 import math
-# import os
-import pickle
-import platform
 import random
-import timeit
-from tkinter import Tk
 
-# from cvxopt import solvers, matrix
-from matplotlib import animation
-from matplotlib import pyplot as plt
-from matplotlib.ticker import FuncFormatter
 import numpy as np
-from tools.cho_integral.get_fm import init_Arbitrary_FM
 import torch
-# import torchvision
-# from torchvision import transforms, models,datasets
-# from torch.utils.data import Dataset, DataLoader
 from tqdm.auto import tqdm
 
-# from tools import *
-from tools.cho_integral import get_cal_chi, Choquet_Integral_NN, train_chinn, Choquet_Integral_QP, init_FM, get_cal_chi_multi
+import sys; sys.path.append('..'); # For importing <constants> from upper directory
+import constants as c
+from tools.cho_integral import get_cal_chi, train_chinn, init_FM, init_Arbitrary_FM, get_cal_chi_multi
 from tools.data_source import create_dataset
 from tools.process_bar import pbiter
-from tools.w_avg import weighted_avg
+from tools.w_avg import weighted_avg·
 
-import sys
-sys.path.append('..')
-import constants as c
 
 
 def fusion(rep):
@@ -211,7 +194,9 @@ def fusion(rep):
     # Part 2 - Run <END>
     ################################################################################
 
-
+    result = {'FMs_by_num_source': FMs_by_num_source,
+              'MSEs_seen_by_num_source': MSEs_seen_by_num_source,
+              'MSEs_unseen_by_num_source': MSEs_unseen_by_num_source}
     print('Rep ' + str(rep) + ' done.')
    
-    return FMs_by_num_source, MSEs_seen_by_num_source, MSEs_unseen_by_num_source
+    return result
